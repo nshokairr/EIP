@@ -1,0 +1,66 @@
+/* hidden until its entrance plays (only while JS motion is running) */
+[data-wait="1"] { opacity: 0; }
+[data-wait="draw"] path[stroke], [data-wait="draw"] circle[stroke] { opacity: 0; }
+
+.flow-layer { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 5; overflow: visible; }
+.particle { mix-blend-mode: normal; }
+
+/* ambient loops — gentle, use independent translate/scale so they never fight layout */
+@keyframes ambFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+@keyframes ambFloatSlow { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes ambBreathe { 0%, 100% { scale: 1; filter: saturate(1) brightness(1); } 50% { scale: 1.025; filter: saturate(1.15) brightness(1.04); } }
+@keyframes ambDrift { 0%, 100% { translate: 0 0; } 50% { translate: 10px -4px; } }
+@keyframes ambRipple { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 1.035; opacity: .55; } }
+@keyframes ambTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@keyframes ambSpin { 0%, 80% { rotate: 0deg; } 100% { rotate: 360deg; } }
+@keyframes ambRocket { 0%, 100% { translate: 0 0; rotate: 0deg; } 30% { translate: 2px -6px; rotate: -2deg; } 60% { translate: -1px -3px; rotate: 1deg; } }
+@keyframes ambHalo { 0%, 100% { filter: drop-shadow(0 0 0 rgba(124, 35, 248, 0)); } 50% { filter: drop-shadow(0 6px 14px rgba(124, 35, 248, .22)); } }
+@keyframes ambPing { 0% { box-shadow: 0 0 0 0 rgba(105, 32, 238, .5); } 100% { box-shadow: 0 0 0 14px rgba(105, 32, 238, 0); } }
+
+.amb-float { animation: ambFloat 5.5s ease-in-out infinite; }
+.amb-float:nth-child(2n) { animation-duration: 6.4s; animation-delay: -1.8s; }
+.amb-float:nth-child(3n) { animation-duration: 7.2s; animation-delay: -3.1s; }
+.amb-float-slow { animation: ambFloatSlow 9s ease-in-out infinite; }
+.amb-breathe { animation: ambBreathe 5s ease-in-out infinite; }
+.amb-drift > img, img.amb-drift { animation: ambDrift 12s ease-in-out infinite; scale: 1.04; }
+.amb-drift { }
+.amb-ripple { animation: ambRipple 4.5s ease-in-out infinite; }
+.amb-ripple:nth-child(2) { animation-delay: -1.5s; }
+.amb-ripple:nth-child(3) { animation-delay: -3s; }
+.amb-ripple:nth-child(4) { animation-delay: -4s; }
+.amb-twinkle svg circle { animation: ambTwinkle 2.8s ease-in-out infinite; }
+.amb-twinkle svg circle:nth-child(3n) { animation-delay: -.9s; }
+.amb-twinkle svg circle:nth-child(3n+1) { animation-delay: -1.8s; }
+.amb-spin { animation: ambSpin 9s cubic-bezier(.65, 0, .35, 1) infinite; }
+.amb-rocket { animation: ambRocket 3.2s ease-in-out infinite; }
+.amb-halo { animation: ambHalo 4s ease-in-out infinite; }
+.amb-ping { border-radius: 50%; animation: ambPing 1.8s ease-out infinite; }
+
+/* hover life on cards & icons (lift only, layout stays put) */
+[data-name^="Source /"], [data-name^="Result /"] { transition: translate .4s cubic-bezier(.16,1,.3,1), box-shadow .4s; }
+[data-name^="Source /"]:hover { translate: 6px 0; }
+[data-name^="Result /"]:hover { translate: -6px 0; }
+[data-name^="Feature /"], [data-name^="Step "], [data-name$=" / belief"], [data-name$=" / column"], [data-name$="/ promise"], [data-name$="/ detail"],
+[data-name^="Metric /"], [data-name="Compare Facilities"], [data-name="Department Insights"], [data-name^="Identify"], [data-name^="Actionable"], [data-name^="Track"],
+[data-name$=" callout"] { transition: translate .45s cubic-bezier(.16,1,.3,1); }
+[data-name^="Feature /"]:hover, [data-name^="Step "]:hover, [data-name$=" / belief"]:hover, [data-name$=" / column"]:hover, [data-name$="/ promise"]:hover,
+[data-name$="/ detail"]:hover, [data-name^="Metric /"]:hover, [data-name="Compare Facilities"]:hover, [data-name="Department Insights"]:hover,
+[data-name^="Identify"]:hover, [data-name^="Actionable"]:hover, [data-name^="Track"]:hover { translate: 0 -6px; }
+[data-name^="Rank "][data-name$=" column"] { transition: translate .4s cubic-bezier(.16,1,.3,1), filter .4s; cursor: default; }
+[data-name^="Rank "][data-name$=" column"]:hover { translate: 0 -8px; filter: drop-shadow(0 10px 14px rgba(124, 35, 248, .25)); }
+[data-name$="progress"] { transition: filter .3s; }
+
+/* gradient CTA sheen */
+.btn-cta { overflow: hidden; isolation: isolate; }
+.btn-cta::after {
+  content: ''; position: absolute; inset: 0; z-index: -0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .45) 50%, transparent 70%);
+  translate: -120% 0; animation: sheen 5.5s ease-in-out 2s infinite;
+}
+.btn-cta[data-name$="See How It Works"]::after { background: linear-gradient(105deg, transparent 30%, rgba(124, 35, 248, .10) 50%, transparent 70%); }
+@keyframes sheen { 0%, 70% { translate: -120% 0; } 100% { translate: 120% 0; } }
+.btn-cta.sending { pointer-events: none; filter: saturate(1.2) brightness(1.05); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-wait] { opacity: 1 !important; }
+}
