@@ -166,7 +166,10 @@ def process(page, comp):
                     oo = soup.new_tag('option', value=opt); oo.string = opt; sel.append(oo)
                 ph.replace_with(sel)
                 chev = box.find(string='⌄')
-                if chev: chev.parent['class'] = chev.parent.get('class', []) + ['field-chevron']
+                if chev:
+                    holder = chev.parent
+                    while holder.parent is not box: holder = holder.parent
+                    holder['class'] = holder.get('class', []) + ['field-chevron', 'm-chev']
             else:
                 inp = soup.new_tag('input')
                 inp['class'] = ph.get('class', []) + ['field-control']
@@ -174,6 +177,13 @@ def process(page, comp):
                 ph.replace_with(inp)
         send = soup.find(attrs={'data-name': 'Send message'})
         send['data-send'] = '1'; send['class'] = send.get('class', []) + ['m-send']
+        btn = send.find(attrs={'data-name': 'Button / Send Message'})
+        plane = send.find(attrs={'data-node-id': '146:645'})
+        group = send.find(attrs={'data-node-id': '146:642'})
+        plane.extract(); group.decompose()
+        plane['class'] = ['relative', 'shrink-0', 'size-[30px]', 'm-plane']
+        btn.insert(0, plane)
+        btn['class'] = [c for c in btn['class'] if not c.startswith('pl-') and not c.startswith('pr-')] + ['px-[20px]']
         card = soup.find(attrs={'data-name': 'Contact Information / enquiry form'})
         card['class'] = card['class'] + ['x-formcard', 'm-formcard']
         card.append('@@SUCCESS@@')
@@ -221,8 +231,9 @@ def menu_html():
         else:
             row['data-msub'] = 'how'
             sub = soup.new_tag('div'); sub['class'] = ['m-sub']
+            inner = soup.new_tag('div'); inner['class'] = ['m-sub-in']; sub.append(inner)
             for t, g in (('How It Works', 'how'), ('Features', 'features')):
-                a = soup.new_tag('a'); a['data-go'] = g; a['class'] = ['m-subrow']; a.string = t; sub.append(a)
+                a = soup.new_tag('a'); a['data-go'] = g; a['class'] = ['m-subrow']; a.string = t; inner.append(a)
             row.insert_after(sub)
     for e in root.find_all(attrs={'data-node-id': '29:305'}):
         e['data-go'] = 'contact'; e['class'] = e.get('class', []) + ['btn-cta']
