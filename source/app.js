@@ -6,14 +6,23 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let current = null;
   let scale = 1;
+  /* phones get the mobile design (390px frames), everything wider the desktop design (1536px) */
+  const MQ = matchMedia('(max-width: 767px)');
+  const isM = () => MQ.matches;
+  const base = () => (isM() ? 390 : 1536);
 
   /* ---------- scale the 1536px canvas to the window ---------- */
   function fit() {
     if (STATIC) return;
-    scale = Math.min(1, window.innerWidth / 1536) || 1;
-    if (window.innerWidth > 1536) scale = window.innerWidth / 1536;
+    const B = base();
+    document.body.classList.toggle('is-mobile', isM());
+    stage.style.width = B + 'px';
+    scale = isM() ? window.innerWidth / B : (Math.min(1, window.innerWidth / B) || 1);
+    if (window.innerWidth > B) scale = window.innerWidth / B;
     stage.style.transform = `scale(${scale})`;
     navbar.style.setProperty('--s', scale);
+    navbar.style.setProperty('--w', B + 'px');
+    mmenu.style.setProperty('--s', scale);
     const p = current || pages[0];
     viewport.style.height = (p.offsetHeight * scale) + 'px';
   }
@@ -58,8 +67,11 @@
   const hooks = { enter: [], leave: [] };
   window.EIP = { on: (ev, fn) => hooks[ev].push(fn), say, get scale() { return scale; } };
 
+  let currentName = 'home';
   function show(name, instant) {
-    const next = document.getElementById('page-' + name) || pages[0];
+    currentName = name;
+    const next = document.getElementById((isM() ? 'page-m-' : 'page-') + name) || document.getElementById(isM() ? 'page-m-home' : 'page-home');
+    closeM();
     if (next === current) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     const swap = () => {
       if (current) { current.classList.remove('is-active'); hooks.leave.forEach(f => f(current)); }
@@ -75,6 +87,20 @@
     setTimeout(() => { swap(); wipe.className = 'out'; setTimeout(() => (wipe.className = ''), 650); }, 470);
   }
   function route() { show((location.hash || '#home').slice(1), !current); }
+  // crossing the phone / desktop breakpoint swaps to the other design of the same page
+  MQ.addEventListener('change', () => { fit(); show(currentName, true); });
+
+  /* ---------- mobile menu sheet ---------- */
+  const mmenu = document.getElementById('mmenu');
+  function openM() {
+    mmenu.querySelectorAll('.m-navrow').forEach(r => r.classList.toggle('is-current', !!(r.dataset.go === currentName || (r.dataset.msub && ['how', 'features'].includes(currentName)))));
+    mmenu.classList.add('open'); mmenu.setAttribute('aria-hidden', 'false'); document.body.classList.add('m-locked');
+  }
+  function closeM() {
+    if (!mmenu) return;
+    mmenu.classList.remove('open'); mmenu.setAttribute('aria-hidden', 'true'); document.body.classList.remove('m-locked');
+    mmenu.querySelectorAll('.m-navrow.open').forEach(r => r.classList.remove('open'));
+  }
   window.addEventListener('hashchange', route);
 
   /* ---------- dropdown menus ---------- */
@@ -103,6 +129,15 @@
 
   /* ---------- clicks ---------- */
   document.addEventListener('click', e => {
+    const mm = e.target.closest('[data-mmenu]');
+    if (mm) { e.preventDefault(); mm.dataset.mmenu === 'open' ? openM() : closeM(); return; }
+    const sub = e.target.closest('[data-msub]');
+    if (sub) { e.preventDefault(); sub.classList.toggle('open'); return; }
+    if (e.target.closest('#mmenu [data-go]')) {
+      const g = e.target.closest('[data-go]').dataset.go;
+      closeM();
+      if (g === currentName) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    }
     const m = e.target.closest('[data-menu]');
     if (m) { e.preventDefault(); openMenu(m); return; }
     if (!e.target.closest('#menu')) closeMenu();
@@ -110,8 +145,8 @@
     if (go) { e.preventDefault(); location.hash = go.dataset.go; return; }
     if (e.target.closest('[data-soon]')) { e.preventDefault(); say('That page isn’t part of this prototype yet'); return; }
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
-  document.querySelectorAll('[data-go],[data-soon],[data-menu],[data-send],[data-reset]').forEach(el => {
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu(); closeM(); } });
+  document.querySelectorAll('[data-go],[data-soon],[data-menu],[data-send],[data-reset],[data-mmenu],[data-msub]').forEach(el => {
     el.setAttribute('tabindex', '0'); el.setAttribute('role', 'button');
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
   });

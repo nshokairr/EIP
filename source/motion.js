@@ -264,20 +264,20 @@
 
   /* ---------- heartbeat behind the engine ---------- */
   const BEAT = 1500;
-  function heartbeat() {
-    const diagram = $(N('41:459'))[0], holder = $(N('41:460'))[0];
+  function heartbeat(o = { diagram: N('41:459'), holder: N('41:460'), ox: 206.8, oy: 308.2, R: 104, img: 'img', io: '206.8px 308.2px', ecg: 1 }) {
+    const diagram = $(o.diagram)[0], holder = $(o.holder)[0];
     if (!diagram || !holder || reduce) return;
-    const img = holder.querySelector('img');
+    const img = holder.querySelector(o.img);
     // core centre inside the glow artwork (measured from the image) and its radius
-    const cx = holder.offsetLeft + 206.8, cy = holder.offsetTop + 308.2, R = 104;
+    const cx = holder.offsetLeft + o.ox, cy = holder.offsetTop + o.oy, R = o.R;
     const hb = document.createElement('div');
     hb.className = 'hb';
-    hb.style.cssText = `left:${cx}px;top:${cy}px;--r:${R}px;--beat:${BEAT}ms`;
+    hb.style.cssText = `left:${cx}px;top:${cy}px;--r:${R}px;--beat:${BEAT}ms;--k:${o.ecg}`;
     hb.innerHTML = '<i class="hb-glow"></i>' + [0, 1, 2, 3].map(i => `<i class="hb-ring hb-ring${i}"></i>`).join('') +
       `<svg class="hb-ecg" width="150" height="40" viewBox="0 0 150 40" fill="none"><defs><linearGradient id="hbg" x1="0" x2="150" y1="0" y2="0" gradientUnits="userSpaceOnUse">${SPEC.map((c, i) => `<stop offset="${i / (SPEC.length - 1)}" stop-color="${c}"/>`).join('')}</linearGradient></defs>` +
       '<path class="hb-base" d="M0 24 H40 L48 20 L54 24 H62 L68 30 L76 4 L84 36 L90 24 H98 L106 16 L116 24 H150"/><path class="hb-trace" pathLength="100" d="M0 24 H40 L48 20 L54 24 H62 L68 30 L76 4 L84 36 L90 24 H98 L106 16 L116 24 H150"/></svg>';
     holder.after(hb);
-    img.style.transformOrigin = '206.8px 308.2px';
+    img.style.transformOrigin = o.io;
     img.classList.add('hb-img');
     img.style.setProperty('--beat', BEAT + 'ms');
     loops.push(() => { hb.remove(); img.classList.remove('hb-img'); });
@@ -354,6 +354,11 @@
   const HEAD = [];
   function headIn() {
     const bar = document.querySelector('#navbar .nav-clone'); if (!bar || reduce) return;
+    if (bar.classList.contains('m-header')) {
+      play(bar.querySelector('[data-name="Brand"]'), 'clipX', 100, 1200);
+      play(bar.querySelector('[data-name="Open menu"]'), 'spiral', 450, 900);
+      return;
+    }
     play(bar.querySelector('.x-brand'), 'clipX', 0, 1200);
     bar.querySelectorAll('[data-name="Navigation"] > *').forEach((e, i) => play(e, 'drop', 200 + i * 70));
     bar.querySelectorAll('[data-name="Actions"] > *').forEach(e => play(e, 'pop', 650));
@@ -513,6 +518,84 @@
     ],
   };
 
+  /* ---------- mobile pages ----------
+     the phone layouts are generated from the Figma mobile frames, so their sections are read from
+     the page itself: every section still gets its own entrance (rotating through the signatures),
+     lists cascade item by item, pictures pull into focus, plus Home's signature moments. */
+  const MROT = ['up', 'skew', 'rise3d', 'drop', 'flip', 'swingL', 'blur', 'swingR', 'curtain'];
+  const LISTY = /Steps|Features|Outcomes|Footer links|Capabilities|cards|list|pillars|Beliefs|details|Metrics|Benefits|Highlights|Journey|journey|Department|Ranking|Socials|promises/i;
+  function mBlocks(sec) {
+    let kids = [...sec.children].filter(c => !c.classList.contains('m-voices'));
+    while (kids.length === 1 && kids[0].children.length > 1 && !/^Image|^Artwork/.test(kids[0].dataset.name || '')) kids = [...kids[0].children];
+    const out = [];
+    kids.forEach(k => {
+      const dn = k.dataset.name || '';
+      if ((LISTY.test(dn) || k.children.length >= 3 && [...k.children].filter(c => (c.dataset.name || '').includes(' / ')).length >= 3) && k.children.length > 1) out.push([...k.children]);
+      else out.push(k);
+    });
+    return out;
+  }
+  function MP(p, name) {
+    const root = p.firstElementChild;
+    const steps = [];
+    let n = 0;
+    const id = x => p.querySelector(N(x));
+    const skip = new Set();
+    if (name === 'home') {
+      const hero = id('141:357'), eng = id('157:496');
+      steps.push([id('141:358'), 'drop', 200, 0, { on: hero }], ['type', ids('141:360', '141:361'), 450, 0, { on: hero }],
+        ['words', id('141:362'), 3300, 0, { on: hero, stagger: 20, dur: 800 }], [id('141:363'), 'pop', 3700, 0, { on: hero }],
+        [id('157:497'), 'iris', 250, 0, { on: eng, dur: 1700 }],
+        ['emit', [...eng.querySelectorAll('[data-name^="Source /"],[data-name^="Result /"]')], 900, 80, { on: eng, from: N('157:497') }],
+        [id('157:500'), 'fade', 1700, 0, { on: eng, dur: 1200 }]);
+      [hero, eng].forEach(x => skip.add(x));
+      const band = id('142:413');
+      if (band) {
+        steps.push([band, 'curtain', 0, 0, { dur: 1300 }], ['launch', id('142:414'), 450, 0, { on: band }],
+          [[...band.children].slice(1), 'rise3d', 600, 130, { on: band, dur: 1000 }]);
+        skip.add(id('142:412'));
+      }
+      const voices = id('142:392');
+      if (voices) { steps.push([voices, 'unblur', 0, 0, { dur: 1700 }]); }
+    }
+    [...root.children].forEach(sec => {
+      const dn = sec.dataset.name || '';
+      if (skip.has(sec) || /^Header|^Divider/.test(dn)) return;
+      if (dn === 'Footer') {
+        const brand = sec.querySelector('[data-name="Footer brand"]');
+        steps.push([brand ? [...brand.children] : [], 'up', 0, 140, { on: sec }],
+          [[...sec.querySelectorAll('.m-soc')], 'spiral', 450, 120, { on: sec }],
+          [[...sec.querySelectorAll('.m-flink')], 'drop', 550, 80, { on: sec }],
+          [sec.querySelector('[data-name="Footer bottom"]'), 'fade', 900, 0, { on: sec }]);
+        return;
+      }
+      const fx = MROT[n++ % MROT.length];
+      let d = 0;
+      mBlocks(sec).forEach(b => {
+        if (Array.isArray(b)) {
+          b.forEach((x, k) => {
+            const isImg = /^Image|^Artwork/.test(x.dataset.name || '');
+            steps.push([x, isImg ? 'pop' : fx, d + k * 110, 0, { on: x, dur: 900 }]);
+            x.querySelectorAll('[data-name^="Image /"]').forEach(im => steps.push([im, 'spiral', d + k * 110 + 150, 0, { on: x, amb: 'amb-float' }]));
+          });
+          return;
+        }
+        if (b === p.querySelector(N('142:392'))) return;
+        const isImg = /^Image|^Artwork/.test(b.dataset.name || '');
+        const abs = getComputedStyle(b).position === 'absolute';
+        steps.push([b, isImg || abs ? 'unblur' : fx, abs ? 200 : d, 0, { on: sec, dur: isImg || abs ? 1600 : 900 }]);
+        if (!abs) d += 110;
+      });
+    });
+    return steps.filter(st => st[0] && (!Array.isArray(st[1]) || st[1].length));
+  }
+  const AMBIENT_M = {
+    home() {
+      heartbeat({ diagram: N('157:496'), holder: N('157:497'), ox: 107, oy: 109.5, R: 52.4, img: '.m-engine-img', io: '104.3px 155.4px', ecg: .5 });
+      voices();
+    },
+  };
+
   /* extra effects that aren't simple keyframes */
   function custom(kind, el, delay, opt) {
     if (kind === 'draw') return draw(el, delay, opt.dur);
@@ -573,12 +656,13 @@
       b.textContent = lines[said[name]++ % lines.length];
       // the woman sits at the top edge, so her words appear at her side; his rise above him
       const side = name === 'woman';
-      const x = side ? who.offsetLeft + 14 : who.offsetLeft + who.offsetWidth / 2;
+      const right = side && !!layer.closest('.m-voices');   // on phones there is no room to her left
+      const x = right ? who.offsetLeft + who.offsetWidth - 14 : side ? who.offsetLeft + 14 : who.offsetLeft + who.offsetWidth / 2;
       const y = side ? who.offsetTop + who.offsetHeight * .42 : who.offsetTop + 10;
       b.style.left = x + 'px'; b.style.top = y + 'px';
-      if (side) b.classList.add('side');
+      if (side) b.classList.add(right ? 'side-r' : 'side');
       box.appendChild(b);
-      const tx = side ? '-100%' : '-50%';
+      const tx = right ? '0%' : side ? '-100%' : '-50%';
       const a = b.animate([
         { opacity: 0, translate: `${tx} 10px`, scale: '.6' },
         { opacity: 1, translate: `${tx} -14px`, scale: '1', offset: .15 },
@@ -660,7 +744,8 @@
     teardown();
     page = p;
     const name = p.dataset.page;
-    const steps = P[name] || [];
+    const mobile = p.hasAttribute('data-mobile');
+    const steps = mobile ? MP(p, name) : (P[name] || []);
     const groups = new Map();
     steps.forEach(st => {
       let [sel, fx, d = 0, s = 0, opt = {}] = st;
@@ -668,9 +753,9 @@
       if (KINDS.includes(sel) || sel === 'plane') { kind = sel; [sel, d, s, opt] = [fx, d, s, opt || {}]; fx = null; }
       else if (fx === 'plane') kind = 'plane';
       opt = opt || {};
-      const els = $(sel);
+      const els = typeof sel === 'string' ? $(sel) : [].concat(sel).filter(Boolean);
       if (!els.length) return;
-      const trig = (opt.on && $(opt.on)[0]) || els[0];
+      const trig = (opt.on && (typeof opt.on === 'string' ? $(opt.on)[0] : opt.on)) || els[0];
       if (!groups.has(trig)) groups.set(trig, []);
       if (kind === 'relay') {
         const hs = $(ids('33:345', '33:355', '33:363', '33:371', '33:379'));
@@ -701,7 +786,7 @@
     // safety: nothing may stay hidden if a trigger never reports (e.g. a thumbnail render)
     later(() => groups.forEach((_, t) => fire(t)), 12000);
     headIn();
-    later(() => { AMBIENT[name] && AMBIENT[name](); imageLife(); onScroll(); }, 50);
+    later(() => { const A = mobile ? AMBIENT_M : AMBIENT; A[name] && A[name](); imageLife(); onScroll(); }, 50);
   }
   function teardown() {
     timers.forEach(clearTimeout); timers = [];

@@ -22,6 +22,8 @@ for p in ORDER:
         continue
     html = open(os.path.join(ROOT, 'pages_x', p + '.html')).read()
     pages.append(f'<section class="page" id="page-{p}" data-page="{p}" aria-label="{p}">{html}</section>')
+    mhtml = open(os.path.join(ROOT, 'pages_m', p + '.html')).read()
+    pages.append(f'<section class="page m-page" id="page-m-{p}" data-page="{p}" data-mobile aria-label="{p} mobile">{mhtml}</section>')
 body = '\n'.join(pages)
 
 if INLINE:
@@ -33,7 +35,17 @@ if INLINE:
             cache[path] = 'data:image/webp;base64,' + base64.b64encode(data).decode()
         return 'src="' + cache[path] + '"'
     body = re.sub(r'src="(assets/[^"]+\.webp)"', rep, body)
+    def rep_svg(m):
+        path = m.group(1)
+        if path not in cache:
+            data = open(os.path.join(ROOT, 'out', path), 'rb').read()
+            cache[path] = 'data:image/svg+xml;base64,' + base64.b64encode(data).decode()
+        return 'src="' + cache[path] + '"'
+    body = re.sub(r'src="(m/[^"]+\.svg)"', rep_svg, body)
 
+mmenu = open(os.path.join(ROOT, 'pages_m', '_menu.html')).read()
+if INLINE:
+    mmenu = re.sub(r'src="(m/[^"]+\.svg)"', lambda m: 'src="data:image/svg+xml;base64,' + base64.b64encode(open(os.path.join(ROOT, 'out', m.group(1)), 'rb').read()).decode() + '"', mmenu)
 static_cls = 'static-mode' if '--static' in sys.argv else ''
 doc = f'''<title>Experio Website</title>
 <style>
@@ -46,6 +58,7 @@ doc = f'''<title>Experio Website</title>
 </div></div>
 <div id="wipe" aria-hidden="true"><span></span><span></span><span></span></div>
 <div id="menu" role="menu" aria-hidden="true"></div>
+<div id="mmenu" aria-hidden="true"><div class="mmenu-sheet">{mmenu}</div></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="progress" aria-hidden="true"></div>
 <script>
