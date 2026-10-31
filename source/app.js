@@ -38,6 +38,7 @@
     const h = p.querySelector('.site-header'); if (!h) return;
     const c = h.cloneNode(true);
     c.classList.add('nav-clone');
+    c.classList.remove('nav-orig');   // the in-page header is hidden after its first visit; the bar must not inherit that
     c.querySelectorAll('[data-wait]').forEach(e => e.removeAttribute('data-wait'));
     h.classList.add('nav-orig');
     navbar.replaceChildren(c);
