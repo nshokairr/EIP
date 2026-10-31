@@ -10,14 +10,17 @@ for a in sys.argv:
         ONLY = a.split('=', 1)[1]
 
 tw = open(os.path.join(ROOT, 'build', 'tw.css')).read()
-app_css = open(os.path.join(ROOT, 'fonts.css')).read() + open(os.path.join(ROOT, 'app.css')).read() + '\n' + open(os.path.join(ROOT, 'motion.css')).read()
+app_css = open(os.path.join(ROOT, 'fonts.css')).read() + open(os.path.join(ROOT, 'brand.css')).read() + open(os.path.join(ROOT, 'app.css')).read() + '\n' + open(os.path.join(ROOT, 'motion.css')).read()
+from rebrand import recolor_text
+app_css = recolor_text(app_css)
 app_js = open(os.path.join(ROOT, 'app.js')).read() + '\n' + open(os.path.join(ROOT, 'motion.js')).read() + '\nwindow.EIP.start();'
+app_js = recolor_text(app_js)
 
 pages = []
 for p in ORDER:
     if ONLY and p != ONLY:
         continue
-    html = open(os.path.join(ROOT, 'pages', p + '.html')).read()
+    html = open(os.path.join(ROOT, 'pages_x', p + '.html')).read()
     pages.append(f'<section class="page" id="page-{p}" data-page="{p}" aria-label="{p}">{html}</section>')
 body = '\n'.join(pages)
 
@@ -32,7 +35,7 @@ if INLINE:
     body = re.sub(r'src="(assets/[^"]+\.webp)"', rep, body)
 
 static_cls = 'static-mode' if '--static' in sys.argv else ''
-doc = f'''<title>Experience Intelligence Platform</title>
+doc = f'''<title>Experio Website</title>
 <style>
 {tw}
 {app_css}
@@ -44,6 +47,7 @@ doc = f'''<title>Experience Intelligence Platform</title>
 <div id="wipe" aria-hidden="true"><span></span><span></span><span></span></div>
 <div id="menu" role="menu" aria-hidden="true"></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="progress" aria-hidden="true"></div>
 <script>
 {app_js}
 </script>'''

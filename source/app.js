@@ -54,8 +54,7 @@
   /* ---------- dropdown menus ---------- */
   const menu = document.getElementById('menu');
   const menus = {
-    solutions: [['How It Works', 'how'], ['Customer Experience', 'features'], ['Employee Experience', 'features'], ['Product Experience', 'features']],
-    resources: [['Benchmarking', 'benchmarking'], ['Case Studies', null], ['Blog', null], ['Guides', null], ['Webinars', null]],
+    how: [['How It Works', 'how'], ['Features', 'features']],
   };
   let openFor = null;
   function closeMenu() { menu.classList.remove('open'); menu.setAttribute('aria-hidden', 'true'); if (openFor) openFor.classList.remove('open'); openFor = null; }
@@ -83,10 +82,10 @@
     if (!e.target.closest('#menu')) closeMenu();
     const go = e.target.closest('[data-go]');
     if (go) { e.preventDefault(); location.hash = go.dataset.go; return; }
-    if (e.target.closest('[data-login]')) { say('Log in isn’t part of this prototype'); return; }
+    if (e.target.closest('[data-soon]')) { e.preventDefault(); say('That page isn’t part of this prototype yet'); return; }
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
-  document.querySelectorAll('[data-go],[data-login],[data-menu],[data-send]').forEach(el => {
+  document.querySelectorAll('[data-go],[data-soon],[data-menu],[data-send],[data-reset]').forEach(el => {
     el.setAttribute('tabindex', '0'); el.setAttribute('role', 'button');
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
   });
