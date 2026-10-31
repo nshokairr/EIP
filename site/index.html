@@ -174,6 +174,9 @@
   .pointer-events-none {
     pointer-events: none;
   }
+  .visible {
+    visibility: visible;
+  }
   .absolute {
     position: absolute;
   }
@@ -4706,6 +4709,24 @@ body { font-family: 'Roboto', system-ui, sans-serif; color: var(--ink); overflow
 .x-appicon svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,.15)); }
 @keyframes iconFlow { 0%, 100% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } }
 
+/* ---------- floating nav bar ---------- */
+.site-header.nav-orig { visibility: hidden; }
+#navbar { position: fixed; left: 0; top: 0; width: 1536px; z-index: 35; transform-origin: 0 0; --s: 1;
+  transform: translateY(0) scale(var(--s)); transition: transform .55s cubic-bezier(.16, 1, .3, 1); }
+#navbar.hidden { transform: translateY(-140%) scale(var(--s)); }
+#navbar .nav-clone { position: relative; transition: height .45s cubic-bezier(.16, 1, .3, 1), padding .45s cubic-bezier(.16, 1, .3, 1); }
+#navbar .nav-clone::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(255, 255, 255, .78);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6); backdrop-filter: blur(16px) saturate(1.6);
+  box-shadow: 0 10px 30px -18px rgba(105, 92, 152, .45); opacity: 0; transition: opacity .4s; }
+#navbar .nav-clone::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--x-spectrum); opacity: 0; transform: scaleX(.2); transition: opacity .4s, transform .8s cubic-bezier(.16, 1, .3, 1); }
+#navbar.scrolled .nav-clone { height: 70px !important; padding-top: 14px !important; padding-bottom: 14px !important; }
+#navbar.scrolled .nav-clone::before { opacity: 1; }
+#navbar.scrolled .nav-clone::after { opacity: .7; transform: scaleX(1); }
+#navbar .x-logo { transition: scale .45s cubic-bezier(.16, 1, .3, 1); transform-origin: left center; }
+#navbar.scrolled .x-logo { scale: .86; }
+#navbar.hidden .nav-clone { pointer-events: none; }
+:focus:not(:focus-visible) { outline: none; }
+
 /* hidden until its entrance plays (only while JS motion is running) */
 [data-wait="1"] { opacity: 0; }
 [data-wait="draw"] path[stroke], [data-wait="draw"] circle[stroke] { opacity: 0; }
@@ -4842,6 +4863,43 @@ body { font-family: 'Roboto', system-ui, sans-serif; color: var(--ink); overflow
 }
 .x-hide { opacity: 0 !important; transition: opacity .3s; }
 
+/* "one platform" relay */
+.x-spark, .x-spark-t { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%; pointer-events: none; z-index: 6; }
+.x-spark { background: radial-gradient(circle, #fff 0 28%, #e31e84 45%, rgba(139, 77, 152, .0) 72%); box-shadow: 0 0 14px 4px rgba(227, 30, 132, .55), 0 0 28px 8px rgba(245, 121, 21, .25); opacity: 0; transition: opacity .3s; }
+.x-spark-t { background: radial-gradient(circle, rgba(227, 30, 132, .8), rgba(139, 77, 152, 0) 70%); }
+.x-ripple { position: absolute; left: 50%; top: 47%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(circle, transparent 58%, color-mix(in srgb, var(--c) 45%, transparent) 64%, transparent 72%); }
+[data-name="Image / Step illustration"] { isolation: isolate; }
+
+/* customer voices */
+.xv { position: absolute; left: 0; top: 0; width: 876.43px; height: 333.57px; pointer-events: none; }
+.xv-s { position: absolute; animation: xvFloat var(--t) ease-in-out var(--dl) infinite; }
+.xv-s img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@keyframes xvFloat { 0%, 100% { translate: 0 0; } 33% { translate: 2px -4px; } 66% { translate: -2px -1px; } }
+.xv-ring { position: absolute; left: 50%; top: 50%; width: calc(var(--r) * 2); height: calc(var(--r) * 2); margin: calc(var(--r) * -1) 0 0 calc(var(--r) * -1); border-radius: 50%;
+  border: 2px solid #e31e84; opacity: 0; }
+.xv-ring:nth-child(2) { border-color: #8b4d98; }
+.xv-ring:nth-child(3) { border-color: #54b59c; }
+.xv-avatar.speaking .xv-ring { animation: xvSpeak 1.5s cubic-bezier(.2, .6, .35, 1) infinite; }
+.xv-avatar.speaking .xv-ring:nth-child(2) { animation-delay: .25s; }
+.xv-avatar.speaking .xv-ring:nth-child(3) { animation-delay: .5s; }
+@keyframes xvSpeak { 0% { opacity: .9; scale: 1; } 100% { opacity: 0; scale: 1.45; } }
+.xv-avatar.speaking img { animation: xvTalk .5s ease-in-out infinite alternate; }
+@keyframes xvTalk { from { scale: 1; } to { scale: 1.025; } }
+.xv-badge { position: absolute; right: 18%; top: 16%; z-index: 2; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px;
+  background: linear-gradient(135deg, #f57915, #e31e84); color: #fff; font: 700 10px/18px Roboto, sans-serif; text-align: center; box-shadow: 0 4px 10px -2px rgba(227, 30, 132, .5); scale: 0; }
+.xv-badge.pop { animation: badgePop .5s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+@keyframes badgePop { from { scale: 0; } to { scale: 1; } }
+.xv-bubble { position: absolute; z-index: 5; white-space: nowrap; padding: 8px 13px; border-radius: 14px; background: #fff; color: #0b0b2c;
+  font: 600 12.5px/1 Roboto, sans-serif; box-shadow: 0 10px 24px -10px rgba(105, 92, 152, .45), 0 0 0 1px rgba(139, 77, 152, .12); }
+.xv-bubble::after { content: ''; position: absolute; bottom: -5px; left: 50%; width: 10px; height: 10px; margin-left: -5px; background: #fff; rotate: 45deg; box-shadow: 2px 2px 0 0 rgba(139, 77, 152, .08); }
+.xv-bubble::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; background: var(--x-spectrum); }
+.xv-dot { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--c) 55%, transparent);
+  offset-rotate: 0deg; animation: xvDot var(--dur) linear var(--dl) infinite; }
+@keyframes xvDot { 0% { offset-distance: 0%; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+.xv-bubble.side { transform-origin: right center; }
+.xv-bubble.side::after { left: auto; right: -4px; bottom: auto; top: 50%; margin: -5px 0 0 0; box-shadow: 2px -2px 0 0 rgba(139, 77, 152, .08); }
+
 </style>
 <script>document.body && (document.body.className = '');</script>
 <div id="viewport"><div id="stage">
@@ -4915,7 +4973,7 @@ body { font-family: 'Roboto', system-ui, sans-serif; color: var(--ink); overflow
 <path d="M17 49C-2.00004 55 24 87 50 62C68 39 69 18 82 8M83 20L82 8L74 11" stroke="#f084bc" stroke-width="1.4"></path>
 </svg></div><div class="absolute h-[72px] left-[546px] top-[397.5px] w-[141px]" data-name="Flow arrow / benchmarks" data-node-id="33:453"><svg class="asset-svg" fill="none" height="72" style="position:absolute;left:0.0px;top:0.0px;width:141.0px;height:72.0px;max-width:none;display:block;pointer-events:none;overflow:visible" viewbox="0 0 141 72" width="141" xmlns="http://www.w3.org/2000/svg">
 <path d="M15 2C-13 37 42 88 108 23L130 10M127 24L130 10L119 11" stroke="#9181c7" stroke-width="1.4"></path>
-</svg></div><div class="absolute bg-[var(--eip-custom-ececf3,#ececf3)] h-[1.5px] left-0 top-[517.5px] w-[1536px]" data-name="Features divider" data-node-id="33:455"></div></div><div class="content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] h-[298.5px] items-start relative shrink-0 w-full" data-name="Real impact every time" data-node-id="33:456"><div class="absolute h-[214.5px] left-[520.5px] top-0 w-[139.5px]" data-name="Image / Incoming decorative feedback waves" data-node-id="33:457"><img alt="" draggable="false" src="assets/33-457.webp" style="position:absolute;left:0.0px;top:0.0px;width:139.5px;height:214.5px;max-width:none;display:block;pointer-events:none"/></div><div class="absolute h-[333px] left-[660px] top-[-37.5px] w-[876px]" data-name="Image / Customer voices decorative illustration" data-node-id="33:458"><img alt="" draggable="false" src="assets/33-458.webp" style="position:absolute;left:0.0px;top:0.0px;width:876.43px;height:333.57px;max-width:none;display:block;pointer-events:none"/></div><div class="[word-break:break-word] absolute content-stretch flex flex-col gap-[var(--eip-spacing-12,12px)] items-start left-[63px] top-[36px] w-[445.5px]" data-name="Real impact introduction" data-node-id="33:459"><p class="font-['Roboto'] font-bold leading-[16px] relative shrink-0 text-[12.5px] text-[color:var(--eip-custom-6321c8,#604ba9)] w-full" data-node-id="33:460" style='font-variation-settings:"wdth" 100'>REAL IMPACT. EVERY TIME.</p><p class="font-['Roboto'] font-bold leading-[36px] relative shrink-0 text-[28.5px] text-[color:var(--eip-custom-08082a,#08082a)] w-full" data-node-id="33:464" style='font-variation-settings:"wdth" 100'>Turn Every Voice</p><p class="bg-clip-text font-['Roboto'] font-bold leading-[0] relative shrink-0 text-[28.5px] text-[transparent] w-full" data-node-id="33:465" style='font-variation-settings:"wdth" 100;background-image:linear-gradient(90deg, var(--eip-gradient-blue,rgb(81, 87, 176)) 0%, var(--eip-gradient-violet,rgb(148, 64, 165)) 43%, var(--eip-gradient-pink,rgb(227, 30, 132)) 86%, var(--eip-gradient-coral,rgb(242, 84, 127)) 100%)'><span class="leading-[36px] text-[#08082a]">Into Your </span><span class="leading-[36px]">Competitive Edge.</span></p><div class="font-['Roboto'] font-normal leading-[0] relative shrink-0 text-[15.5px] text-[color:var(--eip-custom-131332,#131332)] w-full" data-node-id="33:467" style='font-variation-settings:"wdth" 100'><p class="leading-[24px] mb-0">Organizations that listen, understand and act on</p><p class="leading-[24px] mb-0">feedback build stronger relationships, drive loyalty</p><p class="leading-[24px]">and grow faster.</p></div></div><div class="absolute content-stretch flex gap-[var(--eip-spacing-15,15px)] h-[42px] items-start left-[64.5px] top-[237px] w-[202.5px]" data-name="Outcome / Stronger Relationships" data-node-id="33:470"><div class="bg-[var(--eip-custom-823bed,#604ba9)] content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] items-start px-[var(--eip-spacing-8,8px)] py-[var(--eip-spacing-5,5px)] relative rounded-[var(--eip-radius-30,30px)] shrink-0 size-[37.5px]" data-name="Outcome badge" data-node-id="33:472"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[27px] relative shrink-0 text-[23px] text-[color:var(--eip-color-white,white)] text-center w-[22px]" data-node-id="33:477" style='font-variation-settings:"wdth" 100'>♥</p></div><div class="[word-break:break-word] flex-[1_0_0] font-['Roboto'] font-bold h-full leading-[0] min-w-px relative text-[12.5px] text-[color:var(--eip-custom-131332,#131332)]" data-node-id="33:479" style='font-variation-settings:"wdth" 100'><p class="leading-[18px] mb-0">Stronger</p><p class="leading-[18px]">Relationships</p></div></div><div class="absolute content-stretch flex gap-[var(--eip-spacing-15,15px)] h-[42px] items-start left-[279px] top-[237px] w-[202.5px]" data-name="Outcome / Better Performance Every Day" data-node-id="33:480"><div class="bg-[var(--eip-custom-2767ea,#487eb2)] content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] items-start px-[var(--eip-spacing-8,8px)] py-[var(--eip-spacing-5,5px)] relative rounded-[var(--eip-radius-30,30px)] shrink-0 size-[37.5px]" data-name="Outcome badge" data-node-id="33:481"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[27px] relative shrink-0 text-[23px] text-[color:var(--eip-color-white,white)] text-center w-[22px]" data-node-id="33:484" style='font-variation-settings:"wdth" 100'>↗</p></div><div class="[word-break:break-word] flex-[1_0_0] font-['Roboto'] font-bold h-full leading-[0] min-w-px relative text-[12.5px] text-[color:var(--eip-custom-131332,#131332)]" data-node-id="33:485" style='font-variation-settings:"wdth" 100'><p class="leading-[18px] mb-0">Better Performance</p><p class="leading-[18px]">Every Day</p></div></div><div class="absolute content-stretch flex gap-[var(--eip-spacing-15,15px)] h-[42px] items-start left-[493.5px] top-[237px] w-[202.5px]" data-name="Outcome / Sustainable Growth" data-node-id="33:486"><div class="bg-[var(--eip-custom-ec429a,#e31e84)] content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] items-start px-[var(--eip-spacing-8,8px)] py-[var(--eip-spacing-5,5px)] relative rounded-[var(--eip-radius-30,30px)] shrink-0 size-[37.5px]" data-name="Outcome badge" data-node-id="33:487"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[27px] relative shrink-0 text-[23px] text-[color:var(--eip-color-white,white)] text-center w-[22px]" data-node-id="33:490" style='font-variation-settings:"wdth" 100'>★</p></div><div class="[word-break:break-word] flex-[1_0_0] font-['Roboto'] font-bold h-full leading-[0] min-w-px relative text-[12.5px] text-[color:var(--eip-custom-131332,#131332)]" data-node-id="33:491" style='font-variation-settings:"wdth" 100'><p class="leading-[18px] mb-0">Sustainable</p><p class="leading-[18px]">Growth</p></div></div></div><div class="content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] h-[165px] items-start relative shrink-0 w-full" data-name="Elevate every experience" data-node-id="33:492"><div class="absolute content-stretch flex gap-[var(--eip-spacing-0,0px)] h-[152px] items-start left-[60px] rounded-[var(--eip-radius-18,18px)] top-[6px] w-[1416px]" data-name="Demo call to action" data-node-id="33:493" style="background-image:linear-gradient(90deg, rgb(134, 138, 200) 0%, rgb(148, 64, 165) 35%, rgb(227, 30, 132) 66%, rgb(245, 121, 21) 100%)"><div class="absolute h-[138px] left-[57px] rounded-[var(--eip-radius-69,69px)] top-[6px] w-[148.5px]" data-name="Image / Rocket illustration" data-node-id="33:497"><img alt="" draggable="false" src="assets/33-497.webp" style="position:absolute;left:0.0px;top:0.0px;width:148.5px;height:138.0px;max-width:none;display:block;pointer-events:none"/></div><div class="[word-break:break-word] absolute content-stretch flex flex-col gap-[var(--eip-spacing-9,9px)] h-[111px] items-start left-[255px] text-[color:var(--eip-color-white,white)] top-[22.5px] w-[697.5px]" data-name="Demo invitation" data-node-id="33:498"><p class="font-['Roboto'] font-bold leading-[33px] relative shrink-0 text-[27px] w-[697.5px]" data-node-id="33:500" style='font-variation-settings:"wdth" 100'>Ready to Elevate Every Experience?</p><div class="font-['Roboto'] font-normal leading-[0] relative shrink-0 text-[18px] w-[660px]" data-node-id="33:502" style='font-variation-settings:"wdth" 100'><p class="leading-[25.5px] mb-0">Book a personalized demo and discover how our</p><p class="leading-[25.5px] mb-0">platform can help you listen smarter, understand</p><p class="leading-[25.5px]">deeper and act faster.</p></div></div><a class="absolute bg-[var(--eip-color-white,white)] content-stretch cursor-pointer flex gap-[var(--eip-spacing-12,12px)] h-[63px] items-center justify-center left-[1018.5px] px-[var(--eip-spacing-28,28px)] py-[var(--eip-spacing-20_5,20.5px)] rounded-[var(--eip-full,999px)] top-[45px] w-[259.5px] btn-cta" data-go="contact" data-name="Button / Request a Demo" data-node-id="33:503"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[22px] relative shrink-0 text-[18px] text-[color:var(--eip-color-ink,#0b0b2c)] text-left whitespace-nowrap" data-node-id="I33:503;29:315" style='font-variation-settings:"wdth" 100'>Request a Demo</p><div class="relative shrink-0 size-[20px]" data-name="Trailing icon" data-node-id="I33:503;29:316"><svg class="asset-svg" fill="none" height="20" style="position:absolute;left:0.0px;top:0.0px;width:20.0px;height:20.0px;max-width:none;display:block;pointer-events:none;overflow:visible" viewbox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
+</svg></div><div class="absolute bg-[var(--eip-custom-ececf3,#ececf3)] h-[1.5px] left-0 top-[517.5px] w-[1536px]" data-name="Features divider" data-node-id="33:455"></div></div><div class="content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] h-[298.5px] items-start relative shrink-0 w-full" data-name="Real impact every time" data-node-id="33:456"><div class="absolute h-[214.5px] left-[520.5px] top-0 w-[139.5px]" data-name="Image / Incoming decorative feedback waves" data-node-id="33:457"><img alt="" draggable="false" src="assets/33-457.webp" style="position:absolute;left:0.0px;top:0.0px;width:139.5px;height:214.5px;max-width:none;display:block;pointer-events:none"/></div><div class="absolute h-[333px] left-[660px] top-[-37.5px] w-[876px]" data-name="Image / Customer voices decorative illustration" data-node-id="33:458"><img alt="" draggable="false" src="assets/33-458.webp" style="position:absolute;left:0.0px;top:0.0px;width:876.43px;height:333.57px;max-width:none;display:block;pointer-events:none"/><div class="xv" aria-hidden="true"><div class="xv-dots"><i class="xv-dot" style="offset-path:path('M0 180 C 120 200, 200 150, 300 145 S 480 150, 560 125 S 760 95, 876 110');--c:#F57915;--dur:6.0s;--dl:-0.00s"></i><i class="xv-dot" style="offset-path:path('M0 206 C 140 226, 230 182, 330 176 S 520 176, 600 151 S 780 136, 876 146');--c:#E31E84;--dur:7.1s;--dl:-1.37s"></i><i class="xv-dot" style="offset-path:path('M0 152 C 110 166, 210 122, 310 116 S 470 111, 560 96 S 760 72, 876 86');--c:#9440A5;--dur:8.2s;--dl:-2.74s"></i><i class="xv-dot" style="offset-path:path('M0 180 C 120 200, 200 150, 300 145 S 480 150, 560 125 S 760 95, 876 110');--c:#5157B0;--dur:9.3s;--dl:-4.11s"></i><i class="xv-dot" style="offset-path:path('M0 206 C 140 226, 230 182, 330 176 S 520 176, 600 151 S 780 136, 876 146');--c:#49C0A1;--dur:6.0s;--dl:-5.48s"></i><i class="xv-dot" style="offset-path:path('M0 152 C 110 166, 210 122, 310 116 S 470 111, 560 96 S 760 72, 876 86');--c:#EF2C61;--dur:7.1s;--dl:-6.85s"></i><i class="xv-dot" style="offset-path:path('M0 180 C 120 200, 200 150, 300 145 S 480 150, 560 125 S 760 95, 876 110');--c:#C7309A;--dur:8.2s;--dl:-8.22s"></i><i class="xv-dot" style="offset-path:path('M0 206 C 140 226, 230 182, 330 176 S 520 176, 600 151 S 780 136, 876 146');--c:#487EB2;--dur:9.3s;--dl:-9.59s"></i><i class="xv-dot" style="offset-path:path('M0 152 C 110 166, 210 122, 310 116 S 470 111, 560 96 S 760 72, 876 86');--c:#604BA9;--dur:6.0s;--dl:-10.96s"></i></div><div class="xv-s xv-avatar" data-v="woman" style="left:206.43px;top:-15.0px;width:137.14px;height:137.14px;--t:5.2s;--dl:-0.0s;--r:57.14px"><i class="xv-ring"></i><i class="xv-ring"></i><i class="xv-ring"></i><img alt="" draggable="false" src="assets/voice-woman.webp"></div><div class="xv-s xv-avatar" data-v="man" style="left:478.57px;top:79.29px;width:158.57px;height:158.57px;--t:6.1s;--dl:-0.8s;--r:67.86px"><i class="xv-ring"></i><i class="xv-ring"></i><i class="xv-ring"></i><img alt="" draggable="false" src="assets/voice-man.webp"></div><div class="xv-s xv-icon" data-v="chat" style="left:132.86px;top:69.29px;width:97.14px;height:97.14px;--t:7.0s;--dl:-1.6s;--r:37.14px"><b class="xv-badge"></b><img alt="" draggable="false" src="assets/voice-chat.webp"></div><div class="xv-s xv-icon" data-v="qr" style="left:187.14px;top:181.43px;width:97.14px;height:97.14px;--t:7.9s;--dl:-2.4s;--r:37.14px"><b class="xv-badge"></b><img alt="" draggable="false" src="assets/voice-qr.webp"></div><div class="xv-s xv-icon" data-v="bot" style="left:407.14px;top:-12.86px;width:97.14px;height:97.14px;--t:5.2s;--dl:-3.2s;--r:37.14px"><b class="xv-badge"></b><img alt="" draggable="false" src="assets/voice-bot.webp"></div><div class="xv-s xv-icon" data-v="smile" style="left:327.86px;top:130.0px;width:97.14px;height:97.14px;--t:6.1s;--dl:-4.0s;--r:37.14px"><b class="xv-badge"></b><img alt="" draggable="false" src="assets/voice-smile.webp"></div><div class="xv-s xv-icon" data-v="phone" style="left:665.0px;top:-6.43px;width:95.71px;height:95.71px;--t:7.0s;--dl:-4.8s;--r:36.43px"><b class="xv-badge"></b><img alt="" draggable="false" src="assets/voice-phone.webp"></div><div class="xv-s xv-icon" data-v="mail" style="left:667.86px;top:171.43px;width:97.14px;height:97.14px;--t:7.9s;--dl:-5.6s;--r:37.14px"><b class="xv-badge"></b><img alt="" draggable="false" src="assets/voice-mail.webp"></div><div class="xv-bubbles"></div></div></div><div class="[word-break:break-word] absolute content-stretch flex flex-col gap-[var(--eip-spacing-12,12px)] items-start left-[63px] top-[36px] w-[445.5px]" data-name="Real impact introduction" data-node-id="33:459"><p class="font-['Roboto'] font-bold leading-[16px] relative shrink-0 text-[12.5px] text-[color:var(--eip-custom-6321c8,#604ba9)] w-full" data-node-id="33:460" style='font-variation-settings:"wdth" 100'>REAL IMPACT. EVERY TIME.</p><p class="font-['Roboto'] font-bold leading-[36px] relative shrink-0 text-[28.5px] text-[color:var(--eip-custom-08082a,#08082a)] w-full" data-node-id="33:464" style='font-variation-settings:"wdth" 100'>Turn Every Voice</p><p class="bg-clip-text font-['Roboto'] font-bold leading-[0] relative shrink-0 text-[28.5px] text-[transparent] w-full" data-node-id="33:465" style='font-variation-settings:"wdth" 100;background-image:linear-gradient(90deg, var(--eip-gradient-blue,rgb(81, 87, 176)) 0%, var(--eip-gradient-violet,rgb(148, 64, 165)) 43%, var(--eip-gradient-pink,rgb(227, 30, 132)) 86%, var(--eip-gradient-coral,rgb(242, 84, 127)) 100%)'><span class="leading-[36px] text-[#08082a]">Into Your </span><span class="leading-[36px]">Competitive Edge.</span></p><div class="font-['Roboto'] font-normal leading-[0] relative shrink-0 text-[15.5px] text-[color:var(--eip-custom-131332,#131332)] w-full" data-node-id="33:467" style='font-variation-settings:"wdth" 100'><p class="leading-[24px] mb-0">Organizations that listen, understand and act on</p><p class="leading-[24px] mb-0">feedback build stronger relationships, drive loyalty</p><p class="leading-[24px]">and grow faster.</p></div></div><div class="absolute content-stretch flex gap-[var(--eip-spacing-15,15px)] h-[42px] items-start left-[64.5px] top-[237px] w-[202.5px]" data-name="Outcome / Stronger Relationships" data-node-id="33:470"><div class="bg-[var(--eip-custom-823bed,#604ba9)] content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] items-start px-[var(--eip-spacing-8,8px)] py-[var(--eip-spacing-5,5px)] relative rounded-[var(--eip-radius-30,30px)] shrink-0 size-[37.5px]" data-name="Outcome badge" data-node-id="33:472"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[27px] relative shrink-0 text-[23px] text-[color:var(--eip-color-white,white)] text-center w-[22px]" data-node-id="33:477" style='font-variation-settings:"wdth" 100'>♥</p></div><div class="[word-break:break-word] flex-[1_0_0] font-['Roboto'] font-bold h-full leading-[0] min-w-px relative text-[12.5px] text-[color:var(--eip-custom-131332,#131332)]" data-node-id="33:479" style='font-variation-settings:"wdth" 100'><p class="leading-[18px] mb-0">Stronger</p><p class="leading-[18px]">Relationships</p></div></div><div class="absolute content-stretch flex gap-[var(--eip-spacing-15,15px)] h-[42px] items-start left-[279px] top-[237px] w-[202.5px]" data-name="Outcome / Better Performance Every Day" data-node-id="33:480"><div class="bg-[var(--eip-custom-2767ea,#487eb2)] content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] items-start px-[var(--eip-spacing-8,8px)] py-[var(--eip-spacing-5,5px)] relative rounded-[var(--eip-radius-30,30px)] shrink-0 size-[37.5px]" data-name="Outcome badge" data-node-id="33:481"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[27px] relative shrink-0 text-[23px] text-[color:var(--eip-color-white,white)] text-center w-[22px]" data-node-id="33:484" style='font-variation-settings:"wdth" 100'>↗</p></div><div class="[word-break:break-word] flex-[1_0_0] font-['Roboto'] font-bold h-full leading-[0] min-w-px relative text-[12.5px] text-[color:var(--eip-custom-131332,#131332)]" data-node-id="33:485" style='font-variation-settings:"wdth" 100'><p class="leading-[18px] mb-0">Better Performance</p><p class="leading-[18px]">Every Day</p></div></div><div class="absolute content-stretch flex gap-[var(--eip-spacing-15,15px)] h-[42px] items-start left-[493.5px] top-[237px] w-[202.5px]" data-name="Outcome / Sustainable Growth" data-node-id="33:486"><div class="bg-[var(--eip-custom-ec429a,#e31e84)] content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] items-start px-[var(--eip-spacing-8,8px)] py-[var(--eip-spacing-5,5px)] relative rounded-[var(--eip-radius-30,30px)] shrink-0 size-[37.5px]" data-name="Outcome badge" data-node-id="33:487"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[27px] relative shrink-0 text-[23px] text-[color:var(--eip-color-white,white)] text-center w-[22px]" data-node-id="33:490" style='font-variation-settings:"wdth" 100'>★</p></div><div class="[word-break:break-word] flex-[1_0_0] font-['Roboto'] font-bold h-full leading-[0] min-w-px relative text-[12.5px] text-[color:var(--eip-custom-131332,#131332)]" data-node-id="33:491" style='font-variation-settings:"wdth" 100'><p class="leading-[18px] mb-0">Sustainable</p><p class="leading-[18px]">Growth</p></div></div></div><div class="content-stretch flex flex-col gap-[var(--eip-spacing-0,0px)] h-[165px] items-start relative shrink-0 w-full" data-name="Elevate every experience" data-node-id="33:492"><div class="absolute content-stretch flex gap-[var(--eip-spacing-0,0px)] h-[152px] items-start left-[60px] rounded-[var(--eip-radius-18,18px)] top-[6px] w-[1416px]" data-name="Demo call to action" data-node-id="33:493" style="background-image:linear-gradient(90deg, rgb(134, 138, 200) 0%, rgb(148, 64, 165) 35%, rgb(227, 30, 132) 66%, rgb(245, 121, 21) 100%)"><div class="absolute h-[138px] left-[57px] rounded-[var(--eip-radius-69,69px)] top-[6px] w-[148.5px]" data-name="Image / Rocket illustration" data-node-id="33:497"><img alt="" draggable="false" src="assets/33-497.webp" style="position:absolute;left:0.0px;top:0.0px;width:148.5px;height:138.0px;max-width:none;display:block;pointer-events:none"/></div><div class="[word-break:break-word] absolute content-stretch flex flex-col gap-[var(--eip-spacing-9,9px)] h-[111px] items-start left-[255px] text-[color:var(--eip-color-white,white)] top-[22.5px] w-[697.5px]" data-name="Demo invitation" data-node-id="33:498"><p class="font-['Roboto'] font-bold leading-[33px] relative shrink-0 text-[27px] w-[697.5px]" data-node-id="33:500" style='font-variation-settings:"wdth" 100'>Ready to Elevate Every Experience?</p><div class="font-['Roboto'] font-normal leading-[0] relative shrink-0 text-[18px] w-[660px]" data-node-id="33:502" style='font-variation-settings:"wdth" 100'><p class="leading-[25.5px] mb-0">Book a personalized demo and discover how our</p><p class="leading-[25.5px] mb-0">platform can help you listen smarter, understand</p><p class="leading-[25.5px]">deeper and act faster.</p></div></div><a class="absolute bg-[var(--eip-color-white,white)] content-stretch cursor-pointer flex gap-[var(--eip-spacing-12,12px)] h-[63px] items-center justify-center left-[1018.5px] px-[var(--eip-spacing-28,28px)] py-[var(--eip-spacing-20_5,20.5px)] rounded-[var(--eip-full,999px)] top-[45px] w-[259.5px] btn-cta" data-go="contact" data-name="Button / Request a Demo" data-node-id="33:503"><p class="[word-break:break-word] font-['Roboto'] font-bold leading-[22px] relative shrink-0 text-[18px] text-[color:var(--eip-color-ink,#0b0b2c)] text-left whitespace-nowrap" data-node-id="I33:503;29:315" style='font-variation-settings:"wdth" 100'>Request a Demo</p><div class="relative shrink-0 size-[20px]" data-name="Trailing icon" data-node-id="I33:503;29:316"><svg class="asset-svg" fill="none" height="20" style="position:absolute;left:0.0px;top:0.0px;width:20.0px;height:20.0px;max-width:none;display:block;pointer-events:none;overflow:visible" viewbox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
 <path d="M3 10H16M11 15L16 10L11 5" stroke="#e31e84" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
 </svg></div></a></div></div><footer class="xf" data-name="Footer">
   <div class="xf-main">
@@ -5540,10 +5598,35 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
     scale = Math.min(1, window.innerWidth / 1536) || 1;
     if (window.innerWidth > 1536) scale = window.innerWidth / 1536;
     stage.style.transform = `scale(${scale})`;
+    navbar.style.setProperty('--s', scale);
     const p = current || pages[0];
     viewport.style.height = (p.offsetHeight * scale) + 'px';
   }
   window.addEventListener('resize', fit);
+
+  /* ---------- floating nav bar ----------
+     the page header is cloned into a fixed bar outside the scaled stage, so it can stick to the
+     top of the window: it slides away while you scroll down and glides back when you scroll up */
+  const navbar = document.createElement('div');
+  navbar.id = 'navbar';
+  document.body.appendChild(navbar);
+  function buildNav(p) {
+    const h = p.querySelector('.site-header'); if (!h) return;
+    const c = h.cloneNode(true);
+    c.classList.add('nav-clone');
+    c.querySelectorAll('[data-wait]').forEach(e => e.removeAttribute('data-wait'));
+    h.classList.add('nav-orig');
+    navbar.replaceChildren(c);
+    navbar.classList.remove('hidden', 'scrolled');
+  }
+  let lastY = 0, acc = 0;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY, dy = y - lastY; lastY = y;
+    navbar.classList.toggle('scrolled', y > 8);
+    acc = Math.sign(dy) === Math.sign(acc) ? acc + dy : dy;
+    if (y < 120 || acc < -6) navbar.classList.remove('hidden');
+    else if (acc > 10) navbar.classList.add('hidden');
+  }, { passive: true });
 
   /* ---------- toast ---------- */
   const toast = document.getElementById('toast');
@@ -5567,6 +5650,7 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
       if (current) { current.classList.remove('is-active'); hooks.leave.forEach(f => f(current)); }
       current = next;
       next.classList.add('is-active');
+      buildNav(next);
       window.scrollTo(0, 0);
       fit();
       hooks.enter.forEach(f => f(next));
@@ -5907,16 +5991,81 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
     loops.push(() => { hb.remove(); img.classList.remove('hb-img'); });
   }
 
+  /* ---------- "one platform" relay ----------
+     a signal spark travels the pipeline; each step wakes up as it arrives: the icon bounces in,
+     a circular ripple rings out, the connector draws behind the spark, the copy rises. */
+  function relay(delay) {
+    const sec = $(N('33:321'))[0]; if (!sec) return;
+    const holders = $(ids('33:345', '33:355', '33:363', '33:371', '33:379'));
+    const steps = holders.map(h => h.parentElement);
+    const texts = steps.map(s => [...s.children].filter(c => !holders.includes(c)));
+    const paths = ['33:350', '33:358', '33:366', '33:374'].map(i => $(N(i) + ' path[stroke]')[0]);
+    if (reduce) { [...holders, ...texts.flat()].forEach(e => e.removeAttribute('data-wait')); return; }
+    const spark = document.createElement('div'); spark.className = 'x-spark'; sec.appendChild(spark);
+    const trail = [...Array(7)].map((_, i) => { const t = document.createElement('i'); t.className = 'x-spark-t'; t.style.opacity = (1 - i / 7) * .55; t.style.scale = 1 - i * .11; sec.appendChild(t); return t; });
+    loops.push(() => { spark.remove(); trail.forEach(t => t.remove()); });
+    const hist = [];
+    const local = (x, y) => { const r = sec.getBoundingClientRect(), s = window.EIP.scale || 1; return [(x - r.left) / s, (y - r.top) / s]; };
+    const place = (x, y, show = 1) => {
+      spark.style.translate = `${x}px ${y}px`; spark.style.opacity = show;
+      hist.unshift([x, y]); hist.length = 8;
+      trail.forEach((t, i) => { const h = hist[i + 1] || hist[hist.length - 1]; if (h) t.style.translate = `${h[0]}px ${h[1]}px`; t.style.visibility = show ? 'visible' : 'hidden'; });
+    };
+    let first = true;
+    const arrive = i => {
+      const h = holders[i];
+      if (first) {
+        play(h, 'pop', 0, 800);
+        texts[i].forEach((t, k) => play(t, 'up', 120 + k * 90, 800));
+      } else {
+        const b = h.animate([{ scale: '1' }, { scale: '1.14', offset: .35 }, { scale: '.97', offset: .7 }, { scale: '1' }], { duration: 650, easing: 'ease-out' });
+        b.onfinish = () => b.cancel();
+      }
+      const rp = document.createElement('i'); rp.className = 'x-ripple'; rp.style.setProperty('--c', SPEC[[0, 2, 4, 6, 8][i]]);
+      h.prepend(rp);
+      const a = rp.animate([{ scale: '.55', opacity: .9 }, { scale: '1.55', opacity: 0 }], { duration: 1100, easing: 'cubic-bezier(.2,.6,.35,1)' });
+      a.onfinish = () => rp.remove();
+    };
+    const travel = (i, done) => {
+      const p = paths[i];
+      if (!p) return done();
+      const L = p.getTotalLength(), T = 620, t0 = performance.now();
+      if (first) { p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.closest('svg').removeAttribute('data-wait'); }
+      const step = now => {
+        if (!page) return;
+        const k = Math.min(1, (now - t0) / T), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        const pt = p.getPointAtLength(e * L).matrixTransform(p.getScreenCTM());
+        const [x, y] = local(pt.x, pt.y); place(x, y);
+        if (first) p.style.strokeDashoffset = L * (1 - e);
+        if (k < 1) requestAnimationFrame(step); else { if (first) { p.style.strokeDasharray = ''; p.style.strokeDashoffset = ''; } done(); }
+      };
+      requestAnimationFrame(step);
+    };
+    const run = (i = 0) => {
+      arrive(i);
+      if (i === holders.length - 1) {
+        spark.style.opacity = 0; trail.forEach(t => (t.style.visibility = 'hidden'));
+        first = false; hist.length = 0;
+        later(() => run(0), 2600);
+        return;
+      }
+      later(() => travel(i, () => run(i + 1)), 260);
+    };
+    later(() => run(0), delay);
+  }
+
   /* ---------- per-page choreography ----------
      each step: [selector(s), effect, delay, stagger, opts]  or  [kind, selector(s), delay, stagger, opts]
      kinds: draw, count, chart, plane, words, letters, type, emit, launch
      opts.on = trigger selector (defaults to first target) ; opts.amb = ambient class after */
-  const KINDS = ['draw', 'count', 'chart', 'words', 'letters', 'type', 'emit', 'launch'];
-  const HEAD = [
-    ['.x-brand', 'clipX', 0, 0, { dur: 1200 }],
-    [`${nm('Navigation')} > *`, 'drop', 200, 70, { dur: 900 }],
-    [`${nm('Actions')} > *`, 'pop', 650],
-  ];
+  const KINDS = ['draw', 'count', 'chart', 'words', 'letters', 'type', 'emit', 'launch', 'relay'];
+  const HEAD = [];
+  function headIn() {
+    const bar = document.querySelector('#navbar .nav-clone'); if (!bar || reduce) return;
+    play(bar.querySelector('.x-brand'), 'clipX', 0, 1200);
+    bar.querySelectorAll('[data-name="Navigation"] > *').forEach((e, i) => play(e, 'drop', 200 + i * 70));
+    bar.querySelectorAll('[data-name="Actions"] > *').forEach(e => play(e, 'pop', 650));
+  }
   const FOOT = [
     ['.xf-div', 'growX', 0, 180, { on: '.xf', dur: 1300 }],
     ['words', '.xf-t1', 100, 0, { on: '.xf', stagger: 60 }],
@@ -5944,8 +6093,7 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
       // process — masked words, 3D card flips, connectors drawn like a pipeline
       [N('33:324'), 'clipX', 0, 0, { dur: 1000 }], ['words', N('34:614'), 150, 0, { stagger: 70 }],
       [N('33:332'), 'growX', 700], [N('33:340'), 'blur', 750],
-      [ids('33:343', '33:354', '33:362', '33:370', '33:378'), 'flip', 250, 180, { on: N('33:343'), dur: 1100 }],
-      ['draw', `${N('33:350')} svg,${N('33:358')} svg,${N('33:366')} svg,${N('33:374')} svg`, 700, 180, { on: N('33:343') }],
+      ['relay', N('33:343'), 500],
       // everything you need — letters cascade, handwriting, cards swing in from both sides
       [N('33:387'), 'clipX', 0], ['letters', N('33:391'), 100, 0, { stagger: 34 }],
       [N('33:395'), 'clipX', 850, 0, { dur: 1300 }], [N('33:399'), 'curtain', 1100, 0, { dur: 1200 }],
@@ -6112,6 +6260,52 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
     }
   }
 
+  /* ---------- customer voices: the people talk, channels ping ---------- */
+  const SAYS = {
+    woman: ['Loved the quick service! ⭐⭐⭐⭐⭐', 'The staff were so kind 😊', 'Booking was really easy 👍', 'Waiting area was spotless ✨'],
+    man: ['Wait time was too long ⏱️', 'Great follow-up call 📞', 'Clear answers, thank you 🙌', 'App feedback took 10 seconds ⚡'],
+  };
+  function voices() {
+    const layer = $('.xv')[0]; if (!layer || reduce) return;
+    const box = layer.querySelector('.xv-bubbles');
+    const people = ['woman', 'man'].map(n => layer.querySelector(`[data-v="${n}"]`));
+    const icons = [...layer.querySelectorAll('.xv-icon')];
+    let turn = 0, said = { woman: 0, man: 0 };
+    const talk = () => {
+      const who = people[turn % 2]; turn++;
+      if (!who) return;
+      const name = who.dataset.v, lines = SAYS[name];
+      people.forEach(p => p.classList.toggle('speaking', p === who));
+      const b = document.createElement('div');
+      b.className = 'xv-bubble ' + (name === 'man' ? 'left' : 'right');
+      b.textContent = lines[said[name]++ % lines.length];
+      // the woman sits at the top edge, so her words appear at her side; his rise above him
+      const side = name === 'woman';
+      const x = side ? who.offsetLeft + 14 : who.offsetLeft + who.offsetWidth / 2;
+      const y = side ? who.offsetTop + who.offsetHeight * .42 : who.offsetTop + 10;
+      b.style.left = x + 'px'; b.style.top = y + 'px';
+      if (side) b.classList.add('side');
+      box.appendChild(b);
+      const tx = side ? '-100%' : '-50%';
+      const a = b.animate([
+        { opacity: 0, translate: `${tx} 10px`, scale: '.6' },
+        { opacity: 1, translate: `${tx} -14px`, scale: '1', offset: .15 },
+        { opacity: 1, translate: `${tx} -22px`, scale: '1', offset: .8 },
+        { opacity: 0, translate: `${tx} -34px`, scale: '.96' }], { duration: 3200, easing: 'cubic-bezier(.16,1,.3,1)' });
+      a.onfinish = () => b.remove();
+      // a channel lights up a moment later, as if the feedback arrived through it
+      later(() => {
+        const ic = icons[Math.floor(Math.random() * icons.length)]; if (!ic) return;
+        const badge = ic.querySelector('.xv-badge');
+        badge.textContent = String((+badge.textContent || 0) + 1);
+        badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop');
+        const r = ic.animate([{ scale: '1' }, { scale: '1.12', offset: .3 }, { scale: '1' }], { duration: 600, easing: 'ease-out' });
+        r.onfinish = () => r.cancel();
+      }, 900);
+    };
+    later(() => { talk(); const iv = setInterval(talk, 2300); loops.push(() => { clearInterval(iv); box.innerHTML = ''; people.forEach(p => p && p.classList.remove('speaking')); icons.forEach(i => { const b = i.querySelector('.xv-badge'); b.textContent = ''; b.classList.remove('pop'); }); }); }, 1900);
+  }
+
   /* ---------- per-page particle flows & ambient extras ---------- */
   const AMBIENT = {
     home() {
@@ -6127,16 +6321,9 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
         const a = Math.atan2(y - cy, 1196 - cx), sx = cx + r * Math.cos(a), sy = cy + r * Math.sin(a);
         flow(`M${sx} ${sy} C ${sx + 70} ${sy} 1140 ${y} 1196 ${y}`, { color: SPEC[8 - i], n: 1, speed: 2600, delay: 3400 + i * 380, r: 2.8 });
       });
-      // process connectors: pulse rides the real connector lines, step to step
-      $(`${N('33:350')} path[stroke],${N('33:358')} path[stroke],${N('33:366')} path[stroke],${N('33:374')} path[stroke]`).forEach((p, i) =>
-        flow(p, { color: SPEC[2 + i * 2], n: 1, speed: 2200, delay: 1600 + i * 550, r: 2.6 }));
-      // the process steps light up one after another, like a signal moving down a pipeline
-      const steps = $(ids('33:345', '33:355', '33:363', '33:371', '33:379'));
-      let k = 0;
-      const spot = () => { steps.forEach((s, i) => s.classList.toggle('x-live', i === k % steps.length)); k++; };
-      later(() => { spot(); const iv = setInterval(spot, 1100); loops.push(() => { clearInterval(iv); steps.forEach(s => s.classList.remove('x-live')); }); }, 2600);
       // feedback waves shimmer as if signals were flowing in
       $(N('33:457')).forEach(e => e.classList.add('x-shimmer'));
+      voices();
     },
     platform() {
       const cx = 768, cy = 495;
@@ -6171,7 +6358,6 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
       const w = h.offsetWidth;
       if (w >= 400) { h.dataset.parallax = (i % 2 ? .06 : -.05).toString(); return; }
       if (w < 30) return;
-      h.classList.add('x-tilt');
       // ambient life starts once the entrance is over
       later(() => { if (![...h.classList].some(c => c.startsWith('amb-'))) h.classList.add(IMG_AMB[i % IMG_AMB.length]); }, 3200);
     });
@@ -6194,6 +6380,13 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
       if (!els.length) return;
       const trig = (opt.on && $(opt.on)[0]) || els[0];
       if (!groups.has(trig)) groups.set(trig, []);
+      if (kind === 'relay') {
+        const hs = $(ids('33:345', '33:355', '33:363', '33:371', '33:379'));
+        hs.forEach(h => { h.setAttribute('data-wait', '1'); [...h.parentElement.children].filter(c => c !== h).forEach(c => c.setAttribute('data-wait', '1')); });
+        $(['33:350', '33:358', '33:366', '33:374'].map(i => N(i) + ' svg').join(',')).forEach(sv => sv.setAttribute('data-wait', 'draw'));
+        groups.get(trig).push(() => relay(d));
+        return;
+      }
       if (kind === 'type') {
         els.forEach(el => el.setAttribute('data-wait', '1'));
         groups.get(trig).push(() => typeSeq(els, d));
@@ -6215,6 +6408,7 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
     groups.forEach((_, t) => io.observe(t));
     // safety: nothing may stay hidden if a trigger never reports (e.g. a thumbnail render)
     later(() => groups.forEach((_, t) => fire(t)), 12000);
+    headIn();
     later(() => { AMBIENT[name] && AMBIENT[name](); imageLife(); onScroll(); }, 50);
   }
   function teardown() {
@@ -6224,7 +6418,7 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
     flows.forEach(f => f.g.remove()); flows = [];
     countNodes.forEach(n => { if (n._orig) n.nodeValue = n._orig; }); countNodes = [];
     if (page) {
-      $('.flow-layer, .x-caret, .xconf').forEach(s => s.remove());
+      $('.flow-layer, .x-caret, .xconf, .x-ripple').forEach(s => s.remove());
       $('.xc').forEach(c => (c.style.opacity = ''));
       $('[data-wait]').forEach(e => e.removeAttribute('data-wait'));
       $('[class*="amb-"], .x-tilt, .x-shimmer, .x-kenburns, .x-sheen-text').forEach(e => [...e.classList].filter(c => c.startsWith('amb-') || ['x-tilt', 'x-shimmer', 'x-kenburns', 'x-sheen-text'].includes(c)).forEach(c => e.classList.remove(c)));
@@ -6255,26 +6449,10 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
   addEventListener('scroll', () => { if (!sTick) sTick = requestAnimationFrame(onScroll); }, { passive: true });
   addEventListener('resize', onScroll);
 
-  /* ---------- pointer: card spotlight, image tilt, magnetic buttons ---------- */
-  const CARD = '[data-name^="Source /"], [data-name^="Result /"], [data-name^="Feature /"], [data-name^="Metric /"], [data-name$=" / column"], [data-name$="/ promise"], [data-name$=" / belief"], .x-formcard';
-  let tilted = null, magnet = null;
+  /* ---------- pointer: magnetic buttons ---------- */
+  let magnet = null;
   document.addEventListener('pointermove', e => {
     if (reduce) return;
-    const card = e.target.closest(CARD);
-    if (card) {
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
-      card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
-      card.classList.add('x-spot');
-    }
-    const t = e.target.closest('.x-tilt');
-    if (tilted && tilted !== t) { tilted.style.transform = ''; tilted = null; }
-    if (t) {
-      const r = t.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-      t.style.transform = `perspective(600px) rotateX(${(-y * 16).toFixed(1)}deg) rotateY(${(x * 16).toFixed(1)}deg) scale(1.06)`;
-      tilted = t;
-    }
     const m = e.target.closest('.btn-cta, .xbtn, .xbtn-ghost');
     if (magnet && magnet !== m) { magnet.style.translate = ''; magnet = null; }
     if (m) {
@@ -6283,10 +6461,6 @@ Continuously icon" data-node-id="33:1769"><img alt="" draggable="false" src="ass
       magnet = m;
     }
   }, { passive: true });
-  document.addEventListener('pointerout', e => {
-    const c = e.target.closest && e.target.closest(CARD);
-    if (c && !c.contains(e.relatedTarget)) c.classList.remove('x-spot');
-  });
 
   /* ---------- contact form: validation, send, message sent view ---------- */
   function confetti(host) {

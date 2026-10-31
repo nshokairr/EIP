@@ -13,10 +13,35 @@
     scale = Math.min(1, window.innerWidth / 1536) || 1;
     if (window.innerWidth > 1536) scale = window.innerWidth / 1536;
     stage.style.transform = `scale(${scale})`;
+    navbar.style.setProperty('--s', scale);
     const p = current || pages[0];
     viewport.style.height = (p.offsetHeight * scale) + 'px';
   }
   window.addEventListener('resize', fit);
+
+  /* ---------- floating nav bar ----------
+     the page header is cloned into a fixed bar outside the scaled stage, so it can stick to the
+     top of the window: it slides away while you scroll down and glides back when you scroll up */
+  const navbar = document.createElement('div');
+  navbar.id = 'navbar';
+  document.body.appendChild(navbar);
+  function buildNav(p) {
+    const h = p.querySelector('.site-header'); if (!h) return;
+    const c = h.cloneNode(true);
+    c.classList.add('nav-clone');
+    c.querySelectorAll('[data-wait]').forEach(e => e.removeAttribute('data-wait'));
+    h.classList.add('nav-orig');
+    navbar.replaceChildren(c);
+    navbar.classList.remove('hidden', 'scrolled');
+  }
+  let lastY = 0, acc = 0;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY, dy = y - lastY; lastY = y;
+    navbar.classList.toggle('scrolled', y > 8);
+    acc = Math.sign(dy) === Math.sign(acc) ? acc + dy : dy;
+    if (y < 120 || acc < -6) navbar.classList.remove('hidden');
+    else if (acc > 10) navbar.classList.add('hidden');
+  }, { passive: true });
 
   /* ---------- toast ---------- */
   const toast = document.getElementById('toast');
@@ -40,6 +65,7 @@
       if (current) { current.classList.remove('is-active'); hooks.leave.forEach(f => f(current)); }
       current = next;
       next.classList.add('is-active');
+      buildNav(next);
       window.scrollTo(0, 0);
       fit();
       hooks.enter.forEach(f => f(next));

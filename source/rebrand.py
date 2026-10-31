@@ -103,6 +103,23 @@ def app_icon(w, h, radius):
             f'viewBox="0 0 153 171" fill="none"><path fill="#fff" d="{MARK_D}"/></svg></div>')
 
 
+def voices_html():
+    """Layer over the 'customer voices' artwork: each avatar / channel bubble as its own sprite,
+    voice rings for the people, notification badges for the channels, signal dots on the waves."""
+    sp = json.load(open(os.path.join(ROOT, 'brand', 'voices.json')))
+    waves = ['M0 180 C 120 200, 200 150, 300 145 S 480 150, 560 125 S 760 95, 876 110',
+             'M0 206 C 140 226, 230 182, 330 176 S 520 176, 600 151 S 780 136, 876 146',
+             'M0 152 C 110 166, 210 122, 310 116 S 470 111, 560 96 S 760 72, 876 86']
+    cols = ['#F57915', '#E31E84', '#9440A5', '#5157B0', '#49C0A1', '#EF2C61', '#C7309A', '#487EB2', '#604BA9']
+    dots = ''.join(f'<i class="xv-dot" style="offset-path:path(\'{waves[i % 3]}\');--c:{cols[i]};--dur:{6 + (i % 4) * 1.1:.1f}s;--dl:-{i * 1.37:.2f}s"></i>' for i in range(9))
+    parts = []
+    for i, v in enumerate(sp):
+        extra = '<i class="xv-ring"></i><i class="xv-ring"></i><i class="xv-ring"></i>' if v['kind'] == 'avatar' else '<b class="xv-badge"></b>'
+        parts.append(f'<div class="xv-s xv-{v["kind"]}" data-v="{v["name"]}" style="left:{v["x"]}px;top:{v["y"]}px;width:{v["size"]}px;height:{v["size"]}px;'
+                     f'--t:{5.2 + (i % 4) * .9:.1f}s;--dl:-{i * .8:.1f}s;--r:{v["r"]}px">{extra}<img alt="" draggable="false" src="assets/voice-{v["name"]}.webp"></div>')
+    return f'<div class="xv" aria-hidden="true"><div class="xv-dots">{dots}</div>{"".join(parts)}<div class="xv-bubbles"></div></div>'
+
+
 # ---------------------------------------------------------------- header
 NAV = [('Home', 'home'), ('About Us', 'about'), ('Platform', 'platform'), ('How It Works', None),
        ('Benchmarking', 'benchmarking'), ('Contact Us', 'contact')]
@@ -215,6 +232,8 @@ def process(page):
         e = soup.find(attrs={'data-node-id': nid})
         if e:
             e.clear(); e.append(f'@@ICON{nid}@@'); icons[nid] = app_icon(w, h, rad)
+    if page == 'home':
+        soup.find(attrs={'data-node-id': '33:458'}).append('@@VOICES@@')
     if page == 'contact':
         card = soup.find(attrs={'data-node-id': '33:856'})
         card['class'] = card['class'] + ['x-formcard']
@@ -223,7 +242,8 @@ def process(page):
     # hand-built pieces already use the Experio palette: insert after recolouring
     return (html.replace('@@LOGO@@', logo_svg(30)).replace('@@NAV@@', nav_html(page))
             .replace('@@FOOTER@@', footer_html()).replace('@@SUCCESS@@', SUCCESS)
-            .replace('@@ICON39:351@@', icons.get('39:351', '')).replace('@@ICON33:757@@', icons.get('33:757', '')))
+            .replace('@@ICON39:351@@', icons.get('39:351', '')).replace('@@ICON33:757@@', icons.get('33:757', ''))
+            .replace('@@VOICES@@', voices_html() if page == 'home' else ''))
 
 
 def brand_css():

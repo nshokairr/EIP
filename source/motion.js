@@ -283,16 +283,81 @@
     loops.push(() => { hb.remove(); img.classList.remove('hb-img'); });
   }
 
+  /* ---------- "one platform" relay ----------
+     a signal spark travels the pipeline; each step wakes up as it arrives: the icon bounces in,
+     a circular ripple rings out, the connector draws behind the spark, the copy rises. */
+  function relay(delay) {
+    const sec = $(N('33:321'))[0]; if (!sec) return;
+    const holders = $(ids('33:345', '33:355', '33:363', '33:371', '33:379'));
+    const steps = holders.map(h => h.parentElement);
+    const texts = steps.map(s => [...s.children].filter(c => !holders.includes(c)));
+    const paths = ['33:350', '33:358', '33:366', '33:374'].map(i => $(N(i) + ' path[stroke]')[0]);
+    if (reduce) { [...holders, ...texts.flat()].forEach(e => e.removeAttribute('data-wait')); return; }
+    const spark = document.createElement('div'); spark.className = 'x-spark'; sec.appendChild(spark);
+    const trail = [...Array(7)].map((_, i) => { const t = document.createElement('i'); t.className = 'x-spark-t'; t.style.opacity = (1 - i / 7) * .55; t.style.scale = 1 - i * .11; sec.appendChild(t); return t; });
+    loops.push(() => { spark.remove(); trail.forEach(t => t.remove()); });
+    const hist = [];
+    const local = (x, y) => { const r = sec.getBoundingClientRect(), s = window.EIP.scale || 1; return [(x - r.left) / s, (y - r.top) / s]; };
+    const place = (x, y, show = 1) => {
+      spark.style.translate = `${x}px ${y}px`; spark.style.opacity = show;
+      hist.unshift([x, y]); hist.length = 8;
+      trail.forEach((t, i) => { const h = hist[i + 1] || hist[hist.length - 1]; if (h) t.style.translate = `${h[0]}px ${h[1]}px`; t.style.visibility = show ? 'visible' : 'hidden'; });
+    };
+    let first = true;
+    const arrive = i => {
+      const h = holders[i];
+      if (first) {
+        play(h, 'pop', 0, 800);
+        texts[i].forEach((t, k) => play(t, 'up', 120 + k * 90, 800));
+      } else {
+        const b = h.animate([{ scale: '1' }, { scale: '1.14', offset: .35 }, { scale: '.97', offset: .7 }, { scale: '1' }], { duration: 650, easing: 'ease-out' });
+        b.onfinish = () => b.cancel();
+      }
+      const rp = document.createElement('i'); rp.className = 'x-ripple'; rp.style.setProperty('--c', SPEC[[0, 2, 4, 6, 8][i]]);
+      h.prepend(rp);
+      const a = rp.animate([{ scale: '.55', opacity: .9 }, { scale: '1.55', opacity: 0 }], { duration: 1100, easing: 'cubic-bezier(.2,.6,.35,1)' });
+      a.onfinish = () => rp.remove();
+    };
+    const travel = (i, done) => {
+      const p = paths[i];
+      if (!p) return done();
+      const L = p.getTotalLength(), T = 620, t0 = performance.now();
+      if (first) { p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.closest('svg').removeAttribute('data-wait'); }
+      const step = now => {
+        if (!page) return;
+        const k = Math.min(1, (now - t0) / T), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        const pt = p.getPointAtLength(e * L).matrixTransform(p.getScreenCTM());
+        const [x, y] = local(pt.x, pt.y); place(x, y);
+        if (first) p.style.strokeDashoffset = L * (1 - e);
+        if (k < 1) requestAnimationFrame(step); else { if (first) { p.style.strokeDasharray = ''; p.style.strokeDashoffset = ''; } done(); }
+      };
+      requestAnimationFrame(step);
+    };
+    const run = (i = 0) => {
+      arrive(i);
+      if (i === holders.length - 1) {
+        spark.style.opacity = 0; trail.forEach(t => (t.style.visibility = 'hidden'));
+        first = false; hist.length = 0;
+        later(() => run(0), 2600);
+        return;
+      }
+      later(() => travel(i, () => run(i + 1)), 260);
+    };
+    later(() => run(0), delay);
+  }
+
   /* ---------- per-page choreography ----------
      each step: [selector(s), effect, delay, stagger, opts]  or  [kind, selector(s), delay, stagger, opts]
      kinds: draw, count, chart, plane, words, letters, type, emit, launch
      opts.on = trigger selector (defaults to first target) ; opts.amb = ambient class after */
-  const KINDS = ['draw', 'count', 'chart', 'words', 'letters', 'type', 'emit', 'launch'];
-  const HEAD = [
-    ['.x-brand', 'clipX', 0, 0, { dur: 1200 }],
-    [`${nm('Navigation')} > *`, 'drop', 200, 70, { dur: 900 }],
-    [`${nm('Actions')} > *`, 'pop', 650],
-  ];
+  const KINDS = ['draw', 'count', 'chart', 'words', 'letters', 'type', 'emit', 'launch', 'relay'];
+  const HEAD = [];
+  function headIn() {
+    const bar = document.querySelector('#navbar .nav-clone'); if (!bar || reduce) return;
+    play(bar.querySelector('.x-brand'), 'clipX', 0, 1200);
+    bar.querySelectorAll('[data-name="Navigation"] > *').forEach((e, i) => play(e, 'drop', 200 + i * 70));
+    bar.querySelectorAll('[data-name="Actions"] > *').forEach(e => play(e, 'pop', 650));
+  }
   const FOOT = [
     ['.xf-div', 'growX', 0, 180, { on: '.xf', dur: 1300 }],
     ['words', '.xf-t1', 100, 0, { on: '.xf', stagger: 60 }],
@@ -320,8 +385,7 @@
       // process — masked words, 3D card flips, connectors drawn like a pipeline
       [N('33:324'), 'clipX', 0, 0, { dur: 1000 }], ['words', N('34:614'), 150, 0, { stagger: 70 }],
       [N('33:332'), 'growX', 700], [N('33:340'), 'blur', 750],
-      [ids('33:343', '33:354', '33:362', '33:370', '33:378'), 'flip', 250, 180, { on: N('33:343'), dur: 1100 }],
-      ['draw', `${N('33:350')} svg,${N('33:358')} svg,${N('33:366')} svg,${N('33:374')} svg`, 700, 180, { on: N('33:343') }],
+      ['relay', N('33:343'), 500],
       // everything you need — letters cascade, handwriting, cards swing in from both sides
       [N('33:387'), 'clipX', 0], ['letters', N('33:391'), 100, 0, { stagger: 34 }],
       [N('33:395'), 'clipX', 850, 0, { dur: 1300 }], [N('33:399'), 'curtain', 1100, 0, { dur: 1200 }],
@@ -488,6 +552,52 @@
     }
   }
 
+  /* ---------- customer voices: the people talk, channels ping ---------- */
+  const SAYS = {
+    woman: ['Loved the quick service! ⭐⭐⭐⭐⭐', 'The staff were so kind 😊', 'Booking was really easy 👍', 'Waiting area was spotless ✨'],
+    man: ['Wait time was too long ⏱️', 'Great follow-up call 📞', 'Clear answers, thank you 🙌', 'App feedback took 10 seconds ⚡'],
+  };
+  function voices() {
+    const layer = $('.xv')[0]; if (!layer || reduce) return;
+    const box = layer.querySelector('.xv-bubbles');
+    const people = ['woman', 'man'].map(n => layer.querySelector(`[data-v="${n}"]`));
+    const icons = [...layer.querySelectorAll('.xv-icon')];
+    let turn = 0, said = { woman: 0, man: 0 };
+    const talk = () => {
+      const who = people[turn % 2]; turn++;
+      if (!who) return;
+      const name = who.dataset.v, lines = SAYS[name];
+      people.forEach(p => p.classList.toggle('speaking', p === who));
+      const b = document.createElement('div');
+      b.className = 'xv-bubble ' + (name === 'man' ? 'left' : 'right');
+      b.textContent = lines[said[name]++ % lines.length];
+      // the woman sits at the top edge, so her words appear at her side; his rise above him
+      const side = name === 'woman';
+      const x = side ? who.offsetLeft + 14 : who.offsetLeft + who.offsetWidth / 2;
+      const y = side ? who.offsetTop + who.offsetHeight * .42 : who.offsetTop + 10;
+      b.style.left = x + 'px'; b.style.top = y + 'px';
+      if (side) b.classList.add('side');
+      box.appendChild(b);
+      const tx = side ? '-100%' : '-50%';
+      const a = b.animate([
+        { opacity: 0, translate: `${tx} 10px`, scale: '.6' },
+        { opacity: 1, translate: `${tx} -14px`, scale: '1', offset: .15 },
+        { opacity: 1, translate: `${tx} -22px`, scale: '1', offset: .8 },
+        { opacity: 0, translate: `${tx} -34px`, scale: '.96' }], { duration: 3200, easing: 'cubic-bezier(.16,1,.3,1)' });
+      a.onfinish = () => b.remove();
+      // a channel lights up a moment later, as if the feedback arrived through it
+      later(() => {
+        const ic = icons[Math.floor(Math.random() * icons.length)]; if (!ic) return;
+        const badge = ic.querySelector('.xv-badge');
+        badge.textContent = String((+badge.textContent || 0) + 1);
+        badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop');
+        const r = ic.animate([{ scale: '1' }, { scale: '1.12', offset: .3 }, { scale: '1' }], { duration: 600, easing: 'ease-out' });
+        r.onfinish = () => r.cancel();
+      }, 900);
+    };
+    later(() => { talk(); const iv = setInterval(talk, 2300); loops.push(() => { clearInterval(iv); box.innerHTML = ''; people.forEach(p => p && p.classList.remove('speaking')); icons.forEach(i => { const b = i.querySelector('.xv-badge'); b.textContent = ''; b.classList.remove('pop'); }); }); }, 1900);
+  }
+
   /* ---------- per-page particle flows & ambient extras ---------- */
   const AMBIENT = {
     home() {
@@ -503,16 +613,9 @@
         const a = Math.atan2(y - cy, 1196 - cx), sx = cx + r * Math.cos(a), sy = cy + r * Math.sin(a);
         flow(`M${sx} ${sy} C ${sx + 70} ${sy} 1140 ${y} 1196 ${y}`, { color: SPEC[8 - i], n: 1, speed: 2600, delay: 3400 + i * 380, r: 2.8 });
       });
-      // process connectors: pulse rides the real connector lines, step to step
-      $(`${N('33:350')} path[stroke],${N('33:358')} path[stroke],${N('33:366')} path[stroke],${N('33:374')} path[stroke]`).forEach((p, i) =>
-        flow(p, { color: SPEC[2 + i * 2], n: 1, speed: 2200, delay: 1600 + i * 550, r: 2.6 }));
-      // the process steps light up one after another, like a signal moving down a pipeline
-      const steps = $(ids('33:345', '33:355', '33:363', '33:371', '33:379'));
-      let k = 0;
-      const spot = () => { steps.forEach((s, i) => s.classList.toggle('x-live', i === k % steps.length)); k++; };
-      later(() => { spot(); const iv = setInterval(spot, 1100); loops.push(() => { clearInterval(iv); steps.forEach(s => s.classList.remove('x-live')); }); }, 2600);
       // feedback waves shimmer as if signals were flowing in
       $(N('33:457')).forEach(e => e.classList.add('x-shimmer'));
+      voices();
     },
     platform() {
       const cx = 768, cy = 495;
@@ -547,7 +650,6 @@
       const w = h.offsetWidth;
       if (w >= 400) { h.dataset.parallax = (i % 2 ? .06 : -.05).toString(); return; }
       if (w < 30) return;
-      h.classList.add('x-tilt');
       // ambient life starts once the entrance is over
       later(() => { if (![...h.classList].some(c => c.startsWith('amb-'))) h.classList.add(IMG_AMB[i % IMG_AMB.length]); }, 3200);
     });
@@ -570,6 +672,13 @@
       if (!els.length) return;
       const trig = (opt.on && $(opt.on)[0]) || els[0];
       if (!groups.has(trig)) groups.set(trig, []);
+      if (kind === 'relay') {
+        const hs = $(ids('33:345', '33:355', '33:363', '33:371', '33:379'));
+        hs.forEach(h => { h.setAttribute('data-wait', '1'); [...h.parentElement.children].filter(c => c !== h).forEach(c => c.setAttribute('data-wait', '1')); });
+        $(['33:350', '33:358', '33:366', '33:374'].map(i => N(i) + ' svg').join(',')).forEach(sv => sv.setAttribute('data-wait', 'draw'));
+        groups.get(trig).push(() => relay(d));
+        return;
+      }
       if (kind === 'type') {
         els.forEach(el => el.setAttribute('data-wait', '1'));
         groups.get(trig).push(() => typeSeq(els, d));
@@ -591,6 +700,7 @@
     groups.forEach((_, t) => io.observe(t));
     // safety: nothing may stay hidden if a trigger never reports (e.g. a thumbnail render)
     later(() => groups.forEach((_, t) => fire(t)), 12000);
+    headIn();
     later(() => { AMBIENT[name] && AMBIENT[name](); imageLife(); onScroll(); }, 50);
   }
   function teardown() {
@@ -600,7 +710,7 @@
     flows.forEach(f => f.g.remove()); flows = [];
     countNodes.forEach(n => { if (n._orig) n.nodeValue = n._orig; }); countNodes = [];
     if (page) {
-      $('.flow-layer, .x-caret, .xconf').forEach(s => s.remove());
+      $('.flow-layer, .x-caret, .xconf, .x-ripple').forEach(s => s.remove());
       $('.xc').forEach(c => (c.style.opacity = ''));
       $('[data-wait]').forEach(e => e.removeAttribute('data-wait'));
       $('[class*="amb-"], .x-tilt, .x-shimmer, .x-kenburns, .x-sheen-text').forEach(e => [...e.classList].filter(c => c.startsWith('amb-') || ['x-tilt', 'x-shimmer', 'x-kenburns', 'x-sheen-text'].includes(c)).forEach(c => e.classList.remove(c)));
@@ -631,26 +741,10 @@
   addEventListener('scroll', () => { if (!sTick) sTick = requestAnimationFrame(onScroll); }, { passive: true });
   addEventListener('resize', onScroll);
 
-  /* ---------- pointer: card spotlight, image tilt, magnetic buttons ---------- */
-  const CARD = '[data-name^="Source /"], [data-name^="Result /"], [data-name^="Feature /"], [data-name^="Metric /"], [data-name$=" / column"], [data-name$="/ promise"], [data-name$=" / belief"], .x-formcard';
-  let tilted = null, magnet = null;
+  /* ---------- pointer: magnetic buttons ---------- */
+  let magnet = null;
   document.addEventListener('pointermove', e => {
     if (reduce) return;
-    const card = e.target.closest(CARD);
-    if (card) {
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
-      card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
-      card.classList.add('x-spot');
-    }
-    const t = e.target.closest('.x-tilt');
-    if (tilted && tilted !== t) { tilted.style.transform = ''; tilted = null; }
-    if (t) {
-      const r = t.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-      t.style.transform = `perspective(600px) rotateX(${(-y * 16).toFixed(1)}deg) rotateY(${(x * 16).toFixed(1)}deg) scale(1.06)`;
-      tilted = t;
-    }
     const m = e.target.closest('.btn-cta, .xbtn, .xbtn-ghost');
     if (magnet && magnet !== m) { magnet.style.translate = ''; magnet = null; }
     if (m) {
@@ -659,10 +753,6 @@
       magnet = m;
     }
   }, { passive: true });
-  document.addEventListener('pointerout', e => {
-    const c = e.target.closest && e.target.closest(CARD);
-    if (c && !c.contains(e.relatedTarget)) c.classList.remove('x-spot');
-  });
 
   /* ---------- contact form: validation, send, message sent view ---------- */
   function confetti(host) {
